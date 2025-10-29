@@ -1,0 +1,157 @@
+\documentclass[a4paper, twocolumn]{article}
+
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage{textcomp}
+\usepackage{tabularx}
+\usepackage{booktabs}
+
+\usepackage{amssymb, amsthm, mathtools, amsmath}
+\newtheorem{note}{Note}
+\newtheorem*{note*}{Note}
+
+\title{Flood Hazard on the Niger River}
+\author{
+    \href{mailto:kunzmart@fjfi.cvut.cz}{Martin Kunz}
+}
+
+% figure support
+\usepackage{import}
+\usepackage{xifthen}
+\usepackage{pdfpages}
+\usepackage{transparent}
+\usepackage{graphicx}
+% \usepackage{subfig}
+\usepackage{subcaption}
+\usepackage{wrapfig}
+
+
+\graphicspath{ {../figures/} }
+\newcommand{\incfig}[1]{%
+  \def\svgwidth{\columnwidth}
+  \import{../figures/}{#1.pdf_tex}
+}
+
+\newcommand{\incfigwide}[1]{%
+  \def\svgwidth{0.8\paperwidth}
+  \import{../figures/}{#1.pdf_tex}
+}
+
+% includehead, nomarginpar, 
+\usepackage[margin=1.5cm, headheight=10mm]{geometry}
+\usepackage{datetime}
+
+% NOTE: Maličká Kamufláž <12-09-23> 
+\newdate{date}{15}{07}{2023}
+\date{\displaydate{date}}
+
+\usepackage{siunitx}
+\usepackage{physics}
+\AtBeginDocument{\RenewCommandCopy\qty\SI}
+
+\usepackage{fancyhdr}
+\usepackage{indentfirst}
+\usepackage{multicol}
+\usepackage{float}
+\setlength{\abovecaptionskip}{2pt} 
+\setlength{\belowcaptionskip}{0pt} 
+\usepackage{perpage}
+\MakeSorted{figure}
+\MakeSorted{table}
+
+\makeatletter
+\let\thetitle\@title
+\let\theauthor\@author
+\let\thedate\@date
+\makeatother
+
+\usepackage[noabbrev,nameinlink]{cleveref}
+\crefname{objective}{objective}{objectives}
+\usepackage{crossreftools}
+\pdfstringdefDisableCommands{%
+    \let\Cref\crtCref
+    \let\cref\crtcref
+}
+
+\usepackage{nameref}
+\makeatletter
+\let\orgdescriptionlabel\descriptionlabel
+\renewcommand*{\descriptionlabel}[1]{%
+  \let\orglabel\label
+  \let\label\@gobble
+  \phantomsection
+  \edef\@currentlabel{#1}%
+  %\edef\@currentlabelname{#1}%
+  \let\label\orglabel
+  \orgdescriptionlabel{#1}%
+}
+\makeatother
+
+\usepackage{acro}
+
+\DeclareAcronym{id}{
+  short=\emph{i.d.},
+  long=independently distributed,
+}
+
+\DeclareAcronym{iid}{
+  short=\emph{i.i.d.},
+  long=independently identically distributed,
+}
+
+\DeclareAcronym{GRDC}{
+  short=GRDC,
+  long=Global Runoff Data Centre,
+}
+
+\DeclareAcronym{KDE}{
+  short=KDE,
+  long=Kernel Density Estimate,
+}
+
+\DeclareAcronym{IQR}{
+  short=IQR,
+  long=interquartile range,
+}
+
+\DeclareAcronym{SD}{
+  short=SD,
+  long=standard deviation,
+}
+
+\DeclareAcronym{RV}{
+  short=RV,
+  long=random variable,
+}
+
+\DeclareAcronym{MLE}{
+  short=MLE,
+  long=maximum likelihood estimate,
+}
+
+\usepackage[
+backend=biber,
+style=alphabetic,
+url=false,
+isbn=false,
+sorting=ynt
+]{biblatex}
+\addbibresource{index.bib}
+
+\usepackage{enumitem}
+
+\DeclareMathOperator{\std}{std}
+\DeclareMathOperator{\Cov}{Cov}
+
+\newcommand{\N}{\ensuremath{\mathbb{N}}}
+\begin{document}
+
+\pagestyle{fancy}
+\fancyhead{} % clear all header fields
+\fancyhead[R]{\thedate}
+\fancyhead[C]{\thetitle}
+\fancyhead[L]{01MEU \theauthor}
+\fancyfoot{} % clear all footer fields
+\fancyfoot[C]{\thepage}
+
+\sisetup{per-mode=symbol}

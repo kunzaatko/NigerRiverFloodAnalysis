@@ -1,0 +1,8 @@
+\begin{tabularx}{\linewidth}{ll>{\centering\arraybackslash}X>{\centering\arraybackslash}X}
+\toprule  Method & Formula & $k$ & $h$\\\midrule
+  Square-root & $k = \left\lceil \sqrt{n} \right\rceil$ & 9 & \qty{167.12}{\metre\cubed\per\second}\\\addlinespace
+  Sturge & $k = \left\lceil \log_2(n) \right\rceil + 1$ & 8 & \qty{188.01}{\metre\cubed\per\second}\\\addlinespace
+  Rice & $k = \left\lceil 2 \sqrt[3]{n} \right\rceil$ & 9 & \qty{167.12}{\metre\cubed\per\second}\\\addlinespace
+  Doan & $k = 1 + \left\lceil \log_2(n) + \log_2 \left( 1 + \frac{\left| g_1 \right|}{\sigma_{g_1}}\right) \right\rceil$ & 9 & \qty{167.12}{\metre\cubed\per\second}\\\addlinespace
+  Freedman-Diaconi & $h = 2 \frac{\mathop{IQR}(x)}{\sqrt[3]{n}}$ & 11 & \qty{140.86}{\metre\cubed\per\second}\\\bottomrule
+\end{tabularx}

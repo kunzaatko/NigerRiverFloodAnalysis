@@ -1,0 +1,832 @@
+﻿\twocolumn[{%
+  \begin{@twocolumnfalse}\maketitle
+    {\centering\bfseries Objective\par}
+    \begin{enumerate}[label=(\Roman*),ref={[\Roman*]}]
+        \item \label[objective]{obj:I} Estimate the probability that in the year \(2023\) the maximum discharge will be greater than the value
+           \(C\,[\si{\metre\cubed\per\second}]\), where \(C\) is the centre between \(Q_3\) and the next ordered 
+           observed value after the 3\textsuperscript{rd} quartile. That is \[
+               C = \frac{X_{[3n/4]} + X_{[3n/4] + 1}}{2}
+           \] 
+       \item \label[objective]{obj:II} Estimate the probability that in the year \(2023\), the maximum discharge will be greater than 
+            \(D\,[\si{\metre\cubed\per\second}]\), where \(D\) is the last ordered observed value 
+            \(+\qty{100}{\metre\cubed\per\second}\)
+        \item \label[objective]{obj:III} What is the probability that in the year \(2023\) the maximum discharge will be lower than the value 
+            \(E\,[\si{\metre\cubed\per\second}]\), where \(E\) is the centre between the 4\textsuperscript{th} and
+            5\textsuperscript{th} ordered observation? (The probability that there will be this level of draught)
+        \item \label[objective]{obj:IV} What is the minimum threshold \(h\,[\si{\metre\cubed\per\second}]\) such, that the probability that the
+            maximum annual discharge will be higher than this threshold in \(2023\) is lower than \(0.1\), \(0.04\),
+            \(0.02\), \(0.01\) and \(0.004\)? Find the discharges \(h_{0.1}\), \(h_{0.04}\), \(h_{0.02}\), \(h_{0.01}\)
+            and \(h_{0.004}\) for a \(10\)-year, \(25\)-year, \(50\)-year, \(100\)-year and \(250\)-year flood.
+        \item \label[objective]{obj:V} What is the probability that the maximum discharge in the year \(2023\) will be greater than any of the
+            discharges previously observed? That is, there will be a record flood in \(2023\). How many records in the
+            maximum discharge do you anticipate in the upcoming span of \(50\) years?
+        \item \label[objective]{obj:VI} Assume that there is a city downstream the river, that disposes of a anti-flood barier able to retain the
+            maximum discharge \(C\,[\si{\metre\cubed\per\second}]\) from \Cref{obj:I}. If there was to be a flood
+            exceeding this barier \(C\), what is the probability, that the barier will be exceeded by more than 
+            \(Z\,[\si{\metre\cubed\per\second}]\), where \(Z\) is \(1/2\) from the difference between the last ordered
+            observation and \(Q_3\)? That is \[
+                Z = \frac{X_{[n]} - X_{[3n/4]}}{2}
+            \] 
+   \end{enumerate}
+   \hrulefill
+\bigskip\nopagebreak
+\end{@twocolumnfalse}}]
+\section{Introduction}%
+\label{sec:introduction}
+This is an attempt at predicting the flood hazard of the \emph{Niger River}.
+
+\begin{figure}[H]
+    \centering
+    \incfig{Map_of_River_Niger}
+    \caption{Map of the Niger River from its origin in the Guinea Highlands to the Niger Delta}
+    \label{fig:map_of_the_river}
+\end{figure}
+
+\subsection{Niger River}%
+\label{sub:niger_river}
+Niger is the main river of West Africa, with a length exceeding \qty{4100}{km}. Its drainage basin (area of land from
+which all of the water ends up in the river) is over \qty{2.1e6}{km^2}. It originates in the Guinea Highlands and flows 
+through Mali, Niger and Nigeria, before eventually reaching and discharging at the monumental Niger Delta. This 
+trajectory makes it the 3\textsuperscript{rd} longest river in Africa only surpassed by the Congo River and, of course, 
+the Nile.
+
+Water flowing through the Niger river is significantly clearer compared to the Nile since it originates in ancient 
+rocks providing little clay unlike the Nile. Similarly to Nile however, the Niger River floods annually usually in the 
+time period from September to May, peaking in November.
+
+\subsection{Data}%
+\label{sub:data}
+The data is downloaded from the publicly available \href{https://www.bafg.de/GRDC/EN/Home/homepage_node.html}{\ac{GRDC}}
+database. The station, where the measurement took place is located in \emph{Niamey, Niger} (the capital city) at the river 
+kilometre \qty{1420}{} (measured from the \emph{headwater} i.e. the furthest point upstream). The station's altitude is \qty{176}{m} above sea level and it covers a basin size of
+\qty{791121}{km^2} (i.e. water flowing through this point of the river originates in this amount of area
+upstream).
+
+All measurements adhere to the standard notation in the branch, meaning that the discharges are denoted \(Q\). The data
+consists of monthly mean measurements and daily measurements.
+
+Monitoring at this station started in the year 1929, but in this analysis, we are only considering the 
+span from 1944 to the present i.e. 2022 (disregarding the year 2023, because the data from this year is incomplete). 
+We are not considering data from the start of the measurements due the fact that there are a lot of missing monthly records before this moment.
+
+\subsection{Overview}%
+\label{sub:overview}
+The periodicity of the river flooding is significant. Visually, there is not much variation in the maximum discharge.
+
+\begin{figure}[H]
+    \centering
+    \incfig{timeseries_full_overview}
+    \caption{Full overview of the data considered in the analysis}
+    \label{fig:full_mothly_overview}
+ \end{figure}
+
+Since the daily data is also available to us, we can observe the seasonality of discharges.
+
+\begin{figure}[hbt]
+    \centering
+    \incfig{timeseries_groups_by_year}
+    \caption{Seasonal overview of the discharge rate of the river determined from the daily measurements. The colour
+        represents the year, when the measurements occurred.}
+    \label{fig:seasonality_of_discharges}
+ \end{figure}
+
+\begin{table*}[h!]
+    \centering
+    \input{tables/month_stats.tex}
+    \caption{Elementary statistics of the data grouped by months}
+    \label{tab:month_stats}
+\end{table*}
+  
+ Before limiting ourselves to the maximum yearly discharges, let us look at the seasonality of the measurements. 
+ For a comprehensive overview of elementary statistics of the seasonal data, see \Cref{tab:month_stats}.
+
+ \begin{figure}[hbt]
+     \centering
+     \incfig{month_boxplot}
+     \caption{Box plots of the monthly discharges}
+     \label{fig:month_box_plots}
+ \end{figure}
+
+ From \Cref{fig:month_box_plots} we can see the same periodicity that was already apparent from
+ \Cref{fig:full_mothly_overview,fig:seasonality_of_discharges}. We can also see that there are a lot of
+ outliers in the data (in the sense of a Tukey style Box plot \cite{mcgillVariationsBoxPlots1978}, meaning they are
+ greater than \(Q_3 + 1.5 \cdot \mathop{IQR}\)), which would suggest a heavy tailed distribution.
+
+ \section{Extremal values}%
+ \label{sec:extremal_values}
+ From now on, we will consider the annual maxima and minima of discharge rates at the Niamey hydrology station. We will
+ denote the maximum values \[
+     R_{\max}(y) = \max_i \left\{ X^{(y)}_i \right\} \qcomma \tilde{R}_{\max}(y) = \max_{i \in [12]}\{ \tilde{X}^{(y)}_i \} 
+ \] 
+ and minimum values \[
+     R_{\min}(y) = \min_i \left\{ X^{(y)}_i \right\} \qcomma \tilde{R}_{\min}(y) = \min_{i \in [12]}\{ \tilde{X}^{(y)}_i \}
+ \] 
+ where, \(\{X_{y}\}\) are the daily measurements (365-ish of them), \(\{\tilde{X}_{y}\}\) are the 12 monthly measurements 
+ and \(y \in \left\{ x \in \N : 1944 \le x \le 2022 \right\}\) is the year of the measurement.
+
+ \begin{figure}[h]
+     \centering
+     \incfig{R_max_R_min_timeseries}
+     \caption{Comparison of yearly maxima and minima derived from the daily and monthly measurements}
+     \label{fig:R_max_R_min_timeseries}
+ \end{figure}
+
+ From \Cref{fig:R_max_R_min_timeseries} we can see what is an obvious general rule, that the minima derived from the daily
+ measurements are lower than those of monthly measurements and analogously, the maxima are higher than those
+ derived from the monthly means. Because we are concerned mainly with flooding, the extrema derived from daily measurements are
+ better suited for our analysis, due to the fact that a flood is not guaranteed to last for a full month and it does not
+ care for our arbitrary month boundaries. We can argue similarly for daily measurements, but anyhow, they logically tend
+ to smooth our data less and are therefore better suited for analysis of extremal values. Also for a comparison see
+ \hyperref[fig:comp_max_min_day_month]{Figure \the\numexpr\thefigure+1\relax}.
+
+ \begin{figure*}[h]
+    \centering
+   \begin{subfigure}{0.4\textwidth}
+    \label{fig:comp_max_min_day_month}
+    \centering
+    \incfig{max_boxplot}
+    \caption{Comparison of \(\tilde{R}_{\max}\) and \(R_{\max}\)}
+   \end{subfigure}
+   \begin{subfigure}{0.4\textwidth}
+    \centering
+    \incfig{min_boxplot}
+    \caption{Comparison of \(\tilde{R}_{\min}\) and \(R_{\min}\)}
+   \end{subfigure}
+   \caption{Box plots for comparison of extremal values derived from daily and monthly measurements.}
+ \end{figure*}
+
+\begin{table*}[th]
+        \centering
+        \input{tables/max_stats.tex}
+        \caption{Elementary statistics of extremal values}
+        \label{tbl:max_stats}
+\end{table*}
+
+
+From now on, we will be working with the extremal variables derived from the daily observations i.e. \(R_{\max}\) and
+\(R_{\min}\).
+
+\subsection{Independence}%
+\label{sub:independence}
+For any kind of distribution-free estimation, we need to have the estimates of the mean \(\mu\). To approximate the
+variance of the estimates, we first need to prove sequential independence of the time-series \(\left\{ R_{\max}(y) \right\}\) and 
+\(\left\{ R_{\min}(y) \right\}\). As an alternative to testing independence, we will be testing sequential non-correlation.
+That is, we are testing \[
+    H_0: (\forall k \in \left[ h \right])(\rho_k(t) \coloneqq \Cov(X(t),\, X(t+k)) = 0),
+\] 
+where \(h\) is the maximum period of correlation that we allow and the hypothesis is taken for all \(t\) values that are
+applicable. We are considering this hypothesis against the alternative of \[
+    H_1: (\exists k \in \left[ h \right])(\rho_k(t) \neq 0).
+\] 
+The existence of such a \(k\) from hypothesis \(H_1\) would imply the time-series to have seasonality with the period of
+\(k\) years.
+
+We will be using the \emph{Ljung-Box test}. The statistic is \[
+    Q = n(n+2) \sum_{k = 1}^{h} \frac{ \hat{\rho}_k^2 }{n - k}
+\] and by \cite{ljungMeasureLackFit1978} under the assumption of \(H_0\), it holds asymptotically, that \(Q \sim \chi^2_{h}\).
+
+\begin{table}[H]
+  \centering
+  \input{tables/test_indep.tex}
+  \caption{Ljung-Box test of serial correlation (independence) and Box-Pierce test for completeness, even though it
+  is a only a simplified version of the Ljung-Box test.}
+  \label{tab:indep_test}
+\end{table}
+
+By the tests in \Cref{tab:indep_test}, we have to conclude that the time-series is not serially independent up to the lag
+of \(3 \cdot\Delta t\) (in this table \(\Delta t = 1\) year which evaluates to a lag of 3 years). However, we can increase the delays between the samples and test again for this new, smaller sample.
+
+\begin{table}[H]
+  \centering
+  \input{tables/test_indep_wide.tex}
+  \caption{Ljung-Box autocorrelation test for increased delay between the samples}
+  \label{tab:indep_test_wide}
+\end{table}
+
+As we can see from tests in \Cref{tab:indep_test_wide}, we would eventually get to a delay for which the 
+correlation would be minute enough to state that there is no reason to suggest serial dependence of the time-series.
+
+
+Unfortunately, our original sample has only \(79\) years worth of observations, so the assurance of independence would not 
+be a sufficient reason to make this compromise on the asymptotics (arising from the loss of considered measurements). We will keep the full dataset and continue with the
+grain of salt that our estimates may not have a theoretically proven asymptotic precision. 
+
+\subsection{stationarity}%
+\label{sub:stationarity}
+
+One property that we will need for the estimates to be relevant however is strong stationarity. In other words, we need to
+have confidence that the data comes from a single distribution, otherwise there is no reason for even estimating it. In
+the terms of our data, we want to test that there is no apparent trend. That is, we would like to rule out the
+possibility of water in the Niger river decreasing or increasing with time due to some external factor (e.g. climate
+change). A great fit for this kind of statistical test would be \emph{Page's trend test} from \cite{pageContinuousInspectionSchemes1954}.
+
+However I will only intuitively test weak stationarity by testing that even samples have the same mean as the odd 
+samples using \emph{ANOVA} and similarly using the \emph{Levene test} for equal variances.
+
+\begin{table}[H]
+  \centering
+  \input{tables/mean_test.tex}
+  \caption{One way Analysis of Variance test for equality of means applied to even and odd samples of the time-series}
+  \label{tab:mean_test}
+\end{table}
+
+From the test in \Cref{tab:mean_test} we will further assume equal means.
+
+\begin{table}[H]
+  \input{tables/var_test.tex}
+  \caption{Levene's test of equality of variances centred by the sample means and applied to even and odd samples of the
+  time-series.}
+  \label{tab:var_test}
+\end{table}
+
+From the test in \Cref{tab:var_test} we will assume equal variances and without further testing assume strong
+stationarity. We can now move on to the distribution-free estimation with an indication that the data comes from one
+distribution and therefore the estimates will make sense.
+
+\section{Objective Values}%
+\label{sec:objective_values}
+
+For making the estimates in the objectives, we first need to determine the values of the objectives.
+For \(C\) we have
+\[
+    \begin{split}
+        C &= \frac{Q_3 +  (R_{\max})_{[3n/4] + 1}}{2} = \\
+          &= \frac{\qty{2029.225}{\metre\cubed\per\second} + \qty{2033.78}{\metre\cubed\per\second}}{2} = \\
+          &= \qty{2031.5025}{\metre\cubed\per\second}
+    \end{split}
+\]
+for \(D\) we have
+\[
+    D = (R_{\max})_n + \qty{100}{\metre\cubed\per\second} = \qty{2757.965}{\metre\cubed\per\second}.
+\]
+From \Cref{obj:III}, we have \[
+    \begin{split}
+        E &= \frac{(R_{\max})_{4} +  (R_{\max})_{5}}{2} = \\
+          &= \frac{\qty{1266.13}{\metre\cubed\per\second} + \qty{1282.64}{\metre\cubed\per\second}}{2} = \\
+          &= \qty{1274.385}{\metre\cubed\per\second}.
+    \end{split}
+\] 
+and for \(F\) (denoting the value in \Cref{obj:V}) we have
+\[
+    F = (R_{\max})_n = \qty{2657.965}{\metre\cubed\per\second}.
+\] 
+From \Cref{obj:VI}, we also need to know the value for \(Z\) which is \[
+    Z = \frac{(R_{\max})_n - Q_3}{2} = \qty{314.37}{\metre\cubed\per\second}.
+\] 
+
+\begin{table}[h!]
+    \centering
+    \input{tables/objective_values.tex}
+    \caption{Values that occur in the objectives}
+\end{table}
+
+
+\section{Distribution-free Estimates}%
+\label{sec:distribution-free_estimates}
+
+We can make distribution-free estimates for objectives \Cref{obj:I,obj:II,obj:V}.
+
+We will calculate an upper bound of the probability using Markov's inequality \[
+    P(X > \varepsilon) \le \mathbb{E}X/\varepsilon \eqqcolon MUB,  
+\] and Chebyšev's-Cantelli's inequality \[
+    P(X - \mathbb{E}X > \varepsilon) \le \frac{\mathbb{D}X}{\mathbb{D}X + \varepsilon^2},
+\]  therefore \[
+     P(X > \varepsilon + \mathbb{E}X) \le \frac{\mathbb{D}X}{\mathbb{D}X + \varepsilon^2} \eqqcolon CCUB.
+\] 
+\begin{table}[H]
+  \input{tables/distfree_estimates.tex}
+  \caption{Distribution-free estimates for \Cref{obj:I,obj:II,obj:V}}
+  \label{tab:dist_free}
+\end{table}
+
+We also have a distribution-free estimate for the lower bound in the \(L^{p}\) version of 
+\emph{Paley-Zygmund inequality} \cite{petrovLowerBoundsTail2007} by
+\[
+    P(X > \theta\cdot \mathbb{E}X) \ge \frac{(1-\theta)^{p/(p-1)} \cdot \mathbb{E}[X]^{p/(p-1)}}{\mathbb{E}[X^p]^{1/(p-1)}} \eqqcolon PZLB_{p},
+\] which holds for \(\theta \in \left< 0, 1 \right>\). This makes it a bad fit for the lower bounds of all of \(C\), \(D\)
+and \(F\), since
+\[
+    \theta_{D} \ge \theta_{F} \ge \theta_{C} = C/\mathbb{E}[R_{\max}] \approx \frac{\qty{2031.5025}{\metre\cubed\per\second}}{\qty{1856.9178}{\metre\cubed\per\second}}
+    \approx 1.095,
+\] and this lower bound estimate is not good for \(\theta\) near \(0\) and \(1\) anyway.
+
+But we can use this for
+estimating the upper bound of the drought level in \Cref{obj:III}, since
+\begin{equation}
+    \label{eq:PZLB_p}
+    P(X \le E) = 1 - P(X > E) \le 1 - PZLB_{p}(E).
+\end{equation}
+Now from \Cref{eq:PZLB_p} we have an upper bound on the probability that is a function of \(p\), so we can also
+maximize the \(PZLB_{p}\) in the \(p\) variable leading to the optimal upper bound constructed in this manner of \[
+    P(R_{\max} \le E) \le 1 - PZLB_{12.7}(E) \approx 1 - 0.25104 = 0.74896,
+\] and that is our distribution-free estimate for the upper bound of the drought probability, which unfortunately is
+a very imprecise bound.
+
+\begin{table}[h!]
+    \centering
+    \input{tables/distfree_estimates_summary.tex}
+    \caption{Summary of the distribution free estimates for the objectives}
+    \label{tab:dist_free_summary}
+\end{table}
+
+
+\section{Non-parametric Distribution Estimates}%
+\label{sec:non-parametric_estimates}
+
+We want to estimate the probability (not the bounds) for all of the objectives. For this we can also employ
+non-parametric estimates. One such way of estimation is using a non-parametric density estimate and determining the bound
+from this.
+
+\subsection{Histogram Density Estimate}%
+\label{sub:histogram_density_estimate}
+
+The histogram estimate of the probability density of the random variable \(X\), for the (left closed) bins \[
+    \begin{split}
+        B_1 &= \left[\min(X)\eqqcolon m, m + \frac{M - m}{k}\right),\\
+        B_2 &= \left[m + \frac{ M - m }{k}, m + 2\cdot\frac{M - m}{k}\right),\\
+            &\vdots\\
+        B_k &= \left[m + (k-1)\cdot\frac{M - m}{k}, M \coloneqq \max(X)\right]\\
+    \end{split}
+\]  is \begin{equation}
+    \label{eq:histogram_density_estimate}
+    \hat{p}_n^{H}(x) = \frac{k}{n}\sum_{i = 1}^{n} I(X_i \in B_\ell), \qq{such that} x \in B_\ell.
+\end{equation}
+
+We will use various methods for determining the optimal bin-size \(k\).
+This means we are interested in selecting an optimal \(h\), where the number of bins is \[
+    k = \left\lceil \frac{\max(R_{\max}) - \min(R_{\max})}{h} \right\rceil.
+\] 
+
+\subsubsection{Square-root choice}%
+\label{ssub:square-root_choice}
+
+Suggested bin-count \[
+    k = \left\lceil \sqrt{n} \right\rceil.
+\]
+For our data this is \[
+    k = \left\lceil \sqrt{79} \right\rceil = 9.
+\] 
+
+\subsubsection{Struge's Formula}%
+\label{ssub:struge's_formula}
+
+This method is derived from the binomial distribution and it suggests \[
+    k = \left\lceil \log_2(n) \right\rceil + 1.
+\]
+For our data this is \[
+    k = \left\lceil \log_2(79) \right\rceil + 1 = 7.
+\] 
+
+\subsubsection{Rice's Formula}%
+\label{ssub:rice_formula}
+
+Suggested bin-count \[
+    k = \left\lceil 2 \sqrt[3]{n} \right\rceil.
+\] 
+For our data this is  \[
+    k = \left\lceil 2 \sqrt[3]{79} \right\rceil = 9.
+\] 
+
+
+\subsubsection{Doane's Formula}%
+\label{ssub:doane's_formula}
+
+Suggested bin-count \[
+    k = 1 + \left\lceil \log_2(n) + 
+    \log_2 \left( 1 + \frac{\left| \widehat{\tilde{\mu}_3} \right|}{\sigma_{\widehat{\tilde{\mu}_3}}} \right)
+\right\rceil,
+\] where \(\widehat{\tilde{\mu}_3}\) is an estimator of skewness and \(\sigma_{\widehat{\tilde{\mu}_3}}\) is the
+\ac{SD} of the estimate. For the estimator \[
+    g_1 = \frac{m_3}{m_2^{3/2}}\qcomma m_2 = \widehat{\mathbb{E}[R_{\max}^2]} \qqtext{and} m_3
+    = \widehat{\mathbb{E}[R_{\max}^3]},
+\] the standard deviation is \[
+    \sigma_{g_1} = \sqrt{\frac{6(n-2)}{(n+1)(n+3)}}.
+\] 
+For our data this suggests the bin-count of \[
+    k = 9.
+\]
+
+\subsubsection{Freedman-Diaconi's Choice}%
+\label{ssub:freedman-diaconi's_choice}
+
+This rule suggests \[
+    h = 2 \frac{\mathop{IQR}(x)}{\sqrt[3]{n}},
+\] which for our data equates to \[
+h \approx \qty{140.85}{\metre\cubed\per\second}.
+\] and \[
+    k = 11.
+\] 
+
+\begin{table*}[t]
+  \input{tables/histogram_choices.tex}
+  \caption{Summary of methods for histogram parameter selection}
+  \label{tab:hist_choices}
+\end{table*}
+
+\begin{figure}[H]
+    \centering
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \incfig{histogram_with_8_bins}
+  \end{subfigure}
+
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \incfig{histogram_with_9_bins}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \incfig{histogram_with_11_bins}
+  \end{subfigure}
+  \caption{Histograms of \(R_{\max}\) for various bin-counts}
+  \label{fig:histograms}
+\end{figure}
+
+
+\subsubsection{Histogram Estimates}%
+\label{ssub:histogram_estimates}
+We will select the histogram with \(11\) bins suggested by the choice \ref{ssub:freedman-diaconi's_choice}, because
+the estimate of the \ac{IQR} is robust even if our data sample is not independent. We will be able to make
+estimations for the threshold of \Cref{obj:I} and for the probability \(0.1\) of \Cref{obj:IV,obj:VI}.
+
+Estimating the probability of the discharge passing the level \(T\) using a histogram estimate means calculating the
+definite integral from \(T\) to \(+\infty\) of the histogram estimate of the probability density function at
+\Cref{eq:histogram_density_estimate}. That is \[
+    \hat{P}[X > T] = \int_{T}^{+\infty} \hat{p}_n^{\text{H}}(x) \dd{x}.
+\] 
+
+The reason why we need to be careful about this estimate and can not use it blindly for estimating any probability is
+that if the threshold \(T\) is close to the extrema of the data, the estimated \(\hat{p}^H_n(x)\) in the integrand 
+may be under or over estimated (has a large standard deviation) due to the lack of measurements in the integration
+region. At the right edge of the histogram this is even more so
+for distributions that are heavy-tailed. We also do not have an estimate of the probability density at values that are
+greater than the maximum from the data or lower than the minimum of it and we cannot be sure, where the support of the
+density really is. Moreover, using this definition of a histogram (one that is normalized to sum up to 1) does not 
+allow us to estimate the probability of passing any threshold that is larger than the maximum of the data and that
+limits us to the decade flood threshold (i.e. eliminating the ability to estimate for the probabilities of \(0.04\),
+\(0.02\), \(0.01\) and \(0.004\) of objectives \Cref{obj:IV,obj:VI}).
+
+
+That is the reason why we can only estimate these selected objectives from the histogram and not the rest, since they
+are not represented in the data. For example \Cref{obj:III} cannot be estimated from the histogram we have here,
+because, we do not know what the probability density estimate is under the minimum (it is equal to \(0\) using 
+the histogram estimate) of the observed data and thus our estimate would not take this under consideration. We
+will use the \ac{KDE} for estimating the other objectives. 
+
+
+For \Cref{obj:I} we have the estimate of \[
+    \hat{P}\left[R_{\max} \ge C\right] = \int_{C}^{+\infty} p_n^{H}(x) \dd{x} \approx 0.257.
+\] 
+
+Similarly for the threshold in \Cref{obj:IV} of the probability \(0.1\) we have \[
+    \hat{P}^{-1}(0.1) = \qty{2181.665}{\metre\cubed\per\second} \eqqcolon T, 
+\] where \[
+    \hat{P}(T) = \hat{P}[ R_{\max} \ge T ].
+\] 
+
+For \Cref{obj:VI} we have to be careful about the question. It is asking about the conditional probability. The
+estimate is as follows \[
+    \begin{split}
+        \hat{P}[ Z \le R_{\max} - C \mid R_{\max} \ge C ] &= \frac{\hat{P}[ Z + C \le R_{\max} ]}{\hat{P}[ R_{\max} \ge C ]}\\
+                                                        &\approx \frac{0.045}{0.257} \approx 0.175.
+    \end{split}
+\] 
+
+\begin{table}[h!]
+    \centering
+    \input{tables/histogram_estimates_summary.tex}
+    \caption{Summary of the non-parametric histogram estimates for the objectives}
+    \label{tab:histogram_estimates_summary}
+\end{table}
+
+A summary of the estimates can be seen in \Cref{tab:histogram_estimates_summary}.
+
+
+\subsection{Kernel Density Estimate}%
+\label{sub:kernel_density_estimate}
+
+\ac{KDE} is a non-parametric method for estimating the probability density function of a random variable. It works by assigning a weight to each data point, and then summing the weighted kernels over the range of the variable. The kernel function is typically a bell-shaped curve, such as the Gaussian.
+
+The following equation shows the \ac{KDE} of a random variable $X$ with data points $x_1, x_2, ..., x_n$:
+
+\[
+    \hat{p}_n^{\text{K}}(x) = \frac{1}{n} \sum_{i=1}^n K\left( \frac{x - x_i}{\sigma} \right),
+\]
+
+where \(K\) is the kernel function, \(\sigma\) is the bandwidth parameter, and \(\hat{p}_n^{\text{K}}(x)\) is the estimated probability density function.
+
+We will be choosing the bandwidth parameter and the kernel function visually for our data sample. The visual cues that
+will determine our choice are the following:
+\begin{description}
+    \item[\label{itm:desc_cues_smoothness}Smoothness] \(\hat{p}_n^{\text{K}}\) should be smooth, not jagged and should not have sharp edges
+    \item[\label{itm:desc_cues_consistency}Consistency] \(\hat{p}_n^{\text{K}}\) should be visually similar to the histogram estimate \(\hat{p}_n^{\text{H}}\)
+\end{description}
+
+The accuracy of the \ac{KDE} depends more no the choice of of \(\sigma\) than on the kernel \(K\) \cite{markovichClassicalMethodsProbability2007}
+and therefore, we will be concentrating on the choice of the bandwidth parameter and use the, perhaps most widely used,
+Epanechnikov kernel
+\[
+    K(x)=\frac{3}{4}(1-x^{2}).
+\] 
+Furthermore, we have extremal data, meaning that the distribution is presumably heavy-tailed. This creates a problem
+of under-representation of the probability in the tail. There are three conventional methods for fighting this problem.
+
+\begin{enumerate}[label=\alph*)]
+    \item combined parametric non-parametric methods
+    \item variable bandwidth kernel estimator
+    \item retransformed non-parametric estimator
+\end{enumerate}
+
+I will concentrate on the third option because of its simplicity and the possibility not to make any assumptions about
+the distribution family. We will transform the data using the transformation
+
+\begin{align}
+    T(x) &= (2/\pi)\cdot \arctan(x) \\
+    T^{-1}(y) &= \tan((\pi/2)\cdot y).
+\end{align}
+
+and the procedure is to transform the data creating a new \ac{RV} \(Y\), perform the non-parametric density
+estimate and then use the inverse transform on the estimate produced. The point in this is that the support of the
+transformed \ac{RV} is compact and therefore more suitable for \ac{KDE}
+\cite{markovitchNonparametricEstimationLongtailed2000, markovichClassicalMethodsProbability2007}.
+
+A good starting point for the bandwidth parameter \(\sigma\) is the \emph{Silverman's rule of thumb}
+\cite{silvermanDensityEstimationStatistics1986}.
+\[
+    \sigma_{\text{Silverman's}} = 0.9 \cdot \min \left\{  \hat{\sigma}, \frac{\mathop{IQR}}{1.34} \right\} \cdot n^{-\frac{1}{5}},
+\] 
+
+where \(\mathop{IQR}\) is the interquartile range and \(\hat{\sigma}\) is the standard deviation estimate. This is
+a rule choice that is optimal for a normally distributed sample. We will use is as a starting point for our choice.
+
+The Silverman's rule of thumb gives 
+\[
+    \sigma_{\text{Silverman's}} \approx 1.538\times 10^{-5}
+\]
+for our transformed data \(T(X)\). We will make our choice visually considering the neighbourhood of the choice 
+\(\sigma_{\text{Silverman's}}\) with the comparison with the histogram and taking into consideration
+\hyperref[itm:desc_cues_consistency]{consistency} in the \Cref{fig:kde_choice_lines}.
+
+\begin{figure}[H]
+    \centering
+    \incfig{KDE_comparison_lines}
+    \caption{Comparison of different values of the bandwidth parameter from the neighbourhood of the Silverman's rule of
+    thumb value with an overlay of the selected histogram.}
+    \label{fig:kde_choice_lines}
+\end{figure}
+
+We can also visualize the influence of the bandwidth parameter \(\sigma\) on \(\hat{p}^{\text{K}}_{n}\) using
+a surface plot with the neighbourhood around the initial choice \(\sigma_{\text{Silverman's}}\) in figure
+\Cref{fig:kde_choice_surface}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\columnwidth]{KDE_comparison_surface.png}
+    \caption{Comparison of different values of the bandwidth parameter from the neighbourhood of the Silverman's rule of
+    thumb value with an overlay of the selected histogram. The highlighted lines are the estimates with the selected bandwidth parameter.}
+    \label{fig:kde_choice_surface}
+\end{figure}
+
+With consideration of the criteria of \hyperref[itm:desc_cues_consistency]{consistency} and \hyperref[itm:desc_cues_smoothness]{smoothness} in the
+\Cref{fig:kde_choice_surface} a good compromise is the value of \(\sigma = 1.7\cdot 10^{-5}\). The final density estimate 
+\(\hat{p}^{\text{K}}_{n}\) is shown in \Cref{fig:kde_choice_plane}.
+
+\begin{figure}[H]
+    \centering
+    \incfig{KDE_final_plane}
+    \caption{\ac{KDE} with the selected bandwidth parameter \(\sigma = 1.7\cdot 10^{-5}\).}
+    \label{fig:kde_choice_plane}
+\end{figure}
+
+\subsubsection{Kernel Density Objective Estimates}%
+\label{ssub:kernel_density_objective_estimates}
+
+Now that we have the \ac{KDE}, we can perform the estimates for \Cref{obj:I,obj:II,obj:III,obj:IV,obj:V,obj:VI}.
+
+For \Cref{obj:I,obj:II,obj:V} we have the estimate
+\[
+    \hat{P}[ X > T ] = \int_{T}^{+\infty} \hat{p}_{n}^{\text{K}}(x) \dd{x}.
+\]
+
+\begin{table}[h!]
+    \centering
+    \input{tables/kde_estimates_A.tex}
+    % \caption{}
+\end{table}
+
+For \Cref{obj:III} we have
+\[
+     \hat{P}[ X < T ] = \int^{T}_{0} \hat{p}_{n}^{\text{K}}(x) \dd{x}
+ \] and similarly for \Cref{obj:VI}.
+
+\begin{table}[h!]
+    \centering
+    \input{tables/kde_estimates_B.tex}
+    % \caption{}
+\end{table}
+
+For finding the thresholds \(h_{p}\) in \Cref{obj:IV}, it holds that
+\[
+    \hat{P}[ X > h_{p} ] = p,
+\]
+which translates into finding the root of the function 
+\[
+    f(T) = \hat{P}[ X > T ] - p = \int_{T}^{+\infty} \hat{p}_{n}^{\text{K}}(x) \dd{x} - p.
+\] 
+
+
+\begin{table}[h!]
+    \centering
+    \input{tables/kde_estimates_C.tex}
+    % \caption{}
+\end{table}
+
+\section{Parametric Estimates}%
+\label{sec:parametric_estimates}
+
+For a parametric estimate, we first need to find a parametric distribution that we expect the data comes from.
+
+\subsection{Distribution Selection}%
+\label{sub:distribution_selection}
+
+We want to create \ac{MLE} fits of different distributions to the data while ensuring consistency with the previous
+\ac{KDE} and histogram estimate of the density. From the previous estimates (e.g. \Cref{fig:kde_choice_plane}), it seems
+apparent that the distribution is bimodal (explaining why the hypotheses that we simplified our requirement of
+stationarity to in \Cref{sub:stationarity} didn't yield the desired result). As most of our hypothetical distributions
+are unimodal, it is nonsensical to test these without filtering the data first (i.e. selecting data only from one of the
+modes), but even with this precaution, the estimates would be appropriate only under the assumption that the modes
+are isolated (i.e. that the distribution from the other mode does not affect the one that we would hypothetically be
+fitting in isolation).
+
+This models our physical expectation of the river discharge process well since, it would hypothetically arise from the
+physical model of the river if there are two modes of the rivers discharge operation determined by external forces (e.g.
+temperature, climate, etc.). This means that determined by these factors, the discharge in a particular year could be
+modelled by a single one of the distributions from the mixture.
+
+A mixture model complicates our hypothesised distribution however, because we are forced to consider mixtures of
+different unimodal ones (extending the number of possibilities from \(n\) to \(n^2\)). After preliminary fits of
+combinations of \emph{Gumbel}, \emph{Gamma} and \emph{Weibull} distribution mixtures, I selected two parametric
+distributions.\footnote{The likelihood equations system is not guaranteed to be convex for mixture
+distributions in particular, so it is necessary to find initial parameters \(p_0\) for the distribution that are
+close enough to the optimal solution to ensure that the \ac{MLE} is the global solution.}
+Namely a mixture containing two Gumbel distributions and one that explains the first mode with a Gamma distribution and
+the second with a Gumbel. The two Q-Q plots of the parametric fits can be seen in \Cref{fig:QQ_selection_mixture} and we
+can compare them with the previous \ac{KDE} density function in \Cref{fig:PD_selection_mixture}.
+
+
+\begin{figure}[H]
+    \centering
+    \incfig{parametric_QQ_selection}
+    \caption{Q-Q plots of the two selected parametric distribution models.}
+    \label{fig:QQ_selection_mixture}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \incfig{parametric_PD_selection}
+    \caption{Probability density function plots of the two selected parametric distribution models.}
+    \label{fig:PD_selection_mixture}
+\end{figure}
+
+% Due to this, we will consider
+% only the most expected distributions in the mixtures, which we will assume are the ones that occur in river discharge
+% data commonly where the discharges are from a single mode distribution and including ones that very flexible. I will
+% include in this the \emph{Gumbel}, \emph{Gamma} and \emph{Weibull} distributions . This gives \(9\) possibilities for
+% the distribution of our data.
+
+\subsection{Estimates}%
+\label{sub:estimates}
+
+I will be selecting from the distribution as a mixture of two Gumbel distributions based on the Q-Q plot in 
+\Cref{fig:QQ_selection_mixture} and based on the assumption that the distributions model of the modes are affected by
+the properties of the river basin and shape as opposed to it being affected by the external forces. We can also see
+how close the model could be to the \ac{KDE} density comparing the \ac{MLE} density with the parametric model that
+minimizes the \(\ell_2\) norm of the difference of \(\hat{p}_n^{\text{K}}\) and the model \(\hat{p}_{\ell_2}\) in
+\Cref{fig:gumbel_mixture_fits}.
+
+% \begin{figure*}[h!]
+%     \centering
+%     \incfigwide{parametric_gumbel_mixture}
+%     \caption{Fits of the mixture of two Gumbel distributions maximizing the likelihood resp. minimizing the  \(\ell_2\) norm.}
+%     \label{fig:gumbel_mixture_fits}
+% \end{figure*}
+
+\begin{figure}[h]
+    \centering
+    \incfig{parametric_gumbel_mixture_vert}
+    \caption{Fits of the mixture of two Gumbel distributions maximizing the likelihood resp. minimizing the  \(\ell_2\) norm.}
+    \label{fig:gumbel_mixture_fits}
+\end{figure}
+
+The objective estimates are made in the same way as are made from the previous density estimates.
+
+\[
+    \mathop{CCDF}(T) \coloneqq \hat{P}[ X > T ] = \int_{T}^{+\infty} \hat{p}_{\text{MLE}}(x) \dd{x}.
+\]
+
+\begin{table}[h!]
+    \centering
+    \input{tables/parametric_estimates_A.tex}
+    % \caption{}
+\end{table}
+
+In \Cref{obj:III} we use
+\[
+    \mathop{CDF}(T) \coloneqq \hat{P}[ X < T ] = \int^{T}_{0} \hat{p}_{\text{MLE}}(x) \dd{x}
+\]
+
+and for the estimate in \Cref{obj:VI}, we have
+\[
+\hat{P}[ Z \le R_{\max} - C \mid R_{\max} \ge C ] = \frac{\hat{P}[ Z + C \le R_{\max} ]}{\hat{P}[ R_{\max} \ge C ]}.
+\] 
+
+\begin{table}[h!]
+    \centering
+    \input{tables/parametric_estimates_B.tex}
+    % \caption{}
+\end{table}
+
+
+For the thresholds in \Cref{obj:IV} we can use the quantile function of the estimated model.
+\begin{table}[h!]
+    \centering
+    \input{tables/parametric_estimates_C.tex}
+    % \caption{}
+\end{table}
+
+\section{The Number of Record Values}%
+\label{sec:the_number_of_record_values}%
+
+\Cref{obj:V} also requires an estimate for the number of record values that will occur in the next 50 years. For
+a sequence of \(n\) \ac{iid} random variables \((X_i)_{i=1}^n\), we define a maximal record indicator as \[
+    Y_i = \begin{cases}
+        1 & \text{if } i = 1 \text{ or } i > 1 \text{ and } X_i > \max_{j < i} \{ X_j\}\\
+        0 & \text{otherwise.}
+    \end{cases}
+\] 
+
+With this notation, what we consider the number of records in \(n\) time periods is \[
+    M_n = \sum_{i = 1}^{n} Y_i.
+\] 
+
+What allows us to determine the probability \(P[Y_i = 1]\) is the realization that \[
+    X_i > \max_{j < i} \{ X_j \} \Leftrightarrow F(X_i) > \max_{j < i} \{ F(X_j)\}),
+\] 
+where \(F(X)\) is the cumulative distribution function of \(X\). We know that \(F(X)\) has a uniform distribution
+\(U_{[0,1]}\) and thus for the maximal record value indicator (an analogous derivation can be done for the minimum record
+value indicator with the same result) it holds that \[
+    P[Y_i = 1] = 1/i.
+\] 
+
+Thus the expected number of records in \(n\) time periods~is \[
+    \mathbb{E}[M_n] = \mathbb{E}\left[ \sum_{i = 1}^{n} Y_i \right] = \sum_{i = 1}^{n} 1/i.
+\] 
+
+This however further argues in the direction of our sequence not being \ac{iid}, because the expected number of records
+in our sequence of measurements would be \(\sum_{i = 1}^{79} 1/i \approx 5\) but there are \(13\) record values in our
+sample. There is a test for assessing whether a sample is \ac{iid} based on this result, that is derived in
+\cite{benestadRecordvaluesNonstationarityTests2004} that is based on determining the confidence interval using Monte
+Carlo simulations. Using a similar simulation the \ac{SD} of \(M_n\) with \(n \equiv 79\) is \(1.8217\). The reliability
+of the sample \(M_n\) being different from the theoretical and therefore the sample not being \ac{iid} is
+\(4.42\sigma\).
+
+However if we considered an \ac{iid} sample, then the number of expected record measurements in the next \(50\) years
+(i.e. from 2023 to 2073) is \[
+    M_{[80,129]} \coloneqq \mathbb{E}\left[ \sum_{i = 80}^{129} Y_i \right] = \sum_{i = 80}^{129} 1/i \approx 0.49.
+\] 
+A Monte Carlo simulation of the \ac{SD} of \(M_{[80,129]}\) is \(0.69\).
+
+
+\section{Summary and Discussion}%
+\label{sec:summary}
+
+The different approaches to estimating the distributions in
+\Cref{sub:histogram_density_estimate}, \ref{sub:kernel_density_estimate} and \ref{sec:parametric_estimates}
+are mutually consistent as can be seen in
+\Cref{fig:gumbel_mixture_fits}. This is an assurance of their respective correctness (although they are based one on the
+other which slightly undercuts this). The different estimates are also consistent with the distribution-free lower bounds
+developed in \Cref{sec:distribution-free_estimates}. This means that selection of the distribution estimate does not
+change the objective estimates by a large amount and we can select any one of them.
+
+As stated above, the distribution of \(R_\text{max}\) does not seem to be stationary and this should be further
+investigated. Another hint for the non-stationarity can be observed in \Cref{fig:seasonality_of_discharges}, where it
+seems the measurements from the beginnings of the years are growing with the pass of time in the mean.
+
+Based on the Q-Q plot in \Cref{fig:gumbel_mixture_fits}, the Gumbel mixture is a good fit. Therefore I select the 
+parametric model estimates. This is further
+supported by the fact that the Gumbel distribution is often used in flood forecasting models. It is an interesting
+conclusion that the river seems to have two modes of functioning. The final estimates are summarized in the table
+\Cref{tab:summary_estimates}.
+
+For a regulator that is planning on making an anti-flood barrier on the river near the Niamey facility the recommended
+height is dependent on the planned lifetime of this barrier as well as the other possibilities to avoid a disastrous
+level of water. Also the price of a meter of the barrier is presumably not constant as a variable of its height. This
+should be taken into consideration. I would suggest the 100-year water level (\(\qty{2547.7}{\meter\cubed\per\second}\))
+and the barrier height should be derived from this value, but only after further investigation into the stationarity.
+
+\begin{table}[hbt]
+    \centering
+    \input{tables/summary_estimates.tex}
+    \caption{Final estimates of the objective values based on the Gumbel mixture parametric estimates.}
+    \label{tab:summary_estimates}
+\end{table}
