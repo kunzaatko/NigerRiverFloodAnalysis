@@ -1,6 +1,12 @@
 # Niger River Flood Hazard Analysis
 
-This repository contains a statistical analysis of historical discharge data from the Niger River at the Niamey station. The project estimates probabilities related to flood hazards and drought levels for the year 2023 using distribution-free, non-parametric, and parametric methods.
+This repository contains a statistical analysis of historical discharge data from the Niger River at the Niamey station.
+The project estimates probabilities related to flood hazards and drought levels for the year 2023 using
+distribution-free, non-parametric, and parametric methods.
+
+The compiled documents can be found in the [releases](https://github.com/kunzaatko/NigerRiverFloodAnalysis/releases).
+The latest built PDF of the report is available
+[here](https://github.com/kunzaatko/NigerRiverFloodAnalysis/releases/latest/download/01MEU_Niger_River.pdf).
 
 ## Key Figures
 
