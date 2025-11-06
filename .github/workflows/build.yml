@@ -27,8 +27,8 @@ jobs:
           biber-version: '2.17'
 
       - name: Build document
+        working-directory: report
         run: |
-          cd report
           tectonic -X build
 
       - name: Upload pdf
